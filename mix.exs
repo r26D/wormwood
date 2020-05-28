@@ -4,7 +4,7 @@ defmodule Wormwood.MixProject do
   def project do
     [
       app: :wormwood,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -31,7 +31,7 @@ defmodule Wormwood.MixProject do
 
   defp deps do
     [
-      {:absinthe, "~> 1.5.0-rc.1"},
+      {:absinthe, "~> 1.5.0"},
       {:excoveralls, "~> 0.10", only: :test},
       {:ex_doc, "~> 0.21.2", only: :dev, runtime: false}
     ]
