@@ -1,0 +1,2 @@
+#import "./sub/Test.subfrag2.gql"
+#this is a sub frag import

@@ -14,7 +14,7 @@ defmodule Wormwood.GQLLoader do
   @spec load_file!(binary) :: binary
   def load_file!(document_path) when is_binary(document_path) do
     try_load_file(document_path)
-    |> graphql_expand_imports(document_path)
+    |> graphql_expand_imports(Path.expand(document_path))
     |> try_parse_document(document_path)
   end
 
@@ -37,13 +37,13 @@ defmodule Wormwood.GQLLoader do
     Path.expand(file_path)
     |> File.dir?()
     |> case do
-      false ->
-        base_dir = Path.dirname(file_path)
-        do_import_expansion(content, base_dir, file_path)
+         false ->
+           base_dir = Path.dirname(Path.expand(file_path))
+           do_import_expansion(content, base_dir, file_path)
 
-      true ->
-        do_import_expansion(content, file_path, file_path)
-    end
+         true ->
+           do_import_expansion(content, file_path, file_path)
+       end
   end
 
   defp do_import_expansion(content, base_dir, file_path) do
@@ -58,13 +58,13 @@ defmodule Wormwood.GQLLoader do
 
       _ ->
         [_, import_path] = List.first(matches)
-
         content_to_inject =
           Path.join(dir, import_path)
           |> Path.expand()
           |> try_import_file(parent_file)
-          |> graphql_expand_imports(import_path)
-
+          |> graphql_expand_imports(Path.join(dir, import_path)
+                                    |> Path.expand()
+                                    |> Path.dirname())
         (content <> content_to_inject)
         |> graphql_inject_import_matches(tl(matches), dir, parent_file)
     end
@@ -82,12 +82,12 @@ defmodule Wormwood.GQLLoader do
   defp try_load_file(path) do
     File.read(path)
     |> case do
-      {:ok, file_content} ->
-        file_content
+         {:ok, file_content} ->
+           file_content
 
-      {:error, reason} ->
-        raise WormwoodLoaderError, path: path, reason: reason
-    end
+         {:error, reason} ->
+           raise WormwoodLoaderError, path: path, reason: reason
+       end
   end
 
   defp try_parse_document(document, src_path) do

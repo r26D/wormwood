@@ -1,0 +1,2 @@
+#import "../../sample/Test.subfrag2.different_dir.gql"
+#this is a fragment imported from another fragment

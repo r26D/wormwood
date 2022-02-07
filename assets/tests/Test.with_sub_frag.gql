@@ -1,0 +1,6 @@
+#import "./Test.subfrag.gql"
+{
+  Item {
+    id
+  }
+}
