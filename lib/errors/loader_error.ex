@@ -5,8 +5,6 @@ defmodule WormwoodLoaderError do
   defexception [:path, :reason]
 
   def message(exception) do
-    "Wormwood failed to load the document at path: '#{exception.path}' due to: <#{
-      exception.reason
-    }>"
+    "Wormwood failed to load the document at path: '#{exception.path}' due to: <#{exception.reason}>"
   end
 end

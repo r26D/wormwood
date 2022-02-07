@@ -4,7 +4,7 @@ defmodule Wormwood.MixProject do
   def project do
     [
       app: :wormwood,
-      version: "0.1.3",
+      version: "0.1.4",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -18,6 +18,7 @@ defmodule Wormwood.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
+      aliases: aliases(),
       docs: [
         main: "readme",
         extras: ["README.md"]
@@ -59,6 +60,12 @@ defmodule Wormwood.MixProject do
         "GitHub" => "https://github.com/tinfoil/wormwood",
         "Tinfoil Website" => "https://www.tinfoilsecurity.com/go/opensource"
       }
+    ]
+  end
+
+  defp aliases do
+    [
+      prettier: "format \"mix.exs\" \"{lib,test}/**/*.{ex,exs}\""
     ]
   end
 end

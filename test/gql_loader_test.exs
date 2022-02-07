@@ -7,6 +7,7 @@ defmodule Wormwood.Test.GQLLoaderTest do
       document = Wormwood.GQLLoader.load_file!("assets/tests/Test.gql")
       assert String.contains?(document, "#this is just a test fragment to test imports")
     end
+
     test "should load a file with imports that themselves have imports" do
       document = Wormwood.GQLLoader.load_file!("assets/tests/Test.with_sub_frag.gql")
 
