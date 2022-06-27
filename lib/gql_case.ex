@@ -232,14 +232,14 @@ defmodule Wormwood.GQLCase do
   assert {:ok, %Absinthe.Blueprint{} = _blueprint, _pipeline} = result
   ```
   """
-  defmacro query_gql_with_pipeline(pipeline_phases \\ [], options \\ []) do
+  defmacro query_gql_with_pipeline(pipeline_phases \\ [], pipeline_options \\ []) do
     quote do
       if is_nil(@_wormwood_gql_query) do
         raise WormwoodSetupError, reason: :missing_declaration
       end
 
       options_list =
-        unquote(options)
+        unquote(pipeline_options)
         |> Keyword.put(:schema, @_wormwood_gql_schema)
         |> Absinthe.Pipeline.options()
 
@@ -257,9 +257,14 @@ defmodule Wormwood.GQLCase do
   @doc """
     This function gets the default pipeline for your Schema
   """
-  defmacro default_pipeline() do
+  defmacro default_document_pipeline(options\\[]) do
     quote do
-      Absinthe.Pipeline.for_document(@_wormwood_gql_schema)
+      Absinthe.Pipeline.for_document(@_wormwood_gql_schema, unquote(options))
+    end
+  end
+  defmacro default_schema_pipeline(options\\[]) do
+    quote do
+      Absinthe.Pipeline.for_schema(@_wormwood_gql_schema, unquote(options))
     end
   end
 end
