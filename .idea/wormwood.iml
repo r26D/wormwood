@@ -65,5 +65,12 @@
     <orderEntry type="library" name="earmark_parser" level="project" />
     <orderEntry type="library" name="makeup_erlang" level="project" />
     <orderEntry type="library" name="assert_value" level="project" />
+    <orderEntry type="module-library">
+      <library name="Elixir 1.13.3-otp-24">
+        <CLASSES />
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

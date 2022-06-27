@@ -77,7 +77,7 @@ defmodule Wormwood.GQLCase do
   ```
 
   After you define the query name at up code, you can call the query with
-  ```elixir
+  ```elixi
   result = query_gql_by(:my_query, variables: %{}, context: %{})
   {:ok, query_data} = result
   ```
@@ -131,9 +131,9 @@ defmodule Wormwood.GQLCase do
       attribute =
         unquote(__CALLER__.module).__info__(:attributes)[unquote(query_name)]
         |> case do
-          nil -> nil
-          list -> List.last(list)
-        end
+             nil -> nil
+             list -> List.last(list)
+           end
 
       if is_nil(attribute) do
         raise WormwoodSetupError, reason: :missing_declaration
@@ -144,6 +144,36 @@ defmodule Wormwood.GQLCase do
         @_wormwood_gql_schema,
         unquote(options)
       )
+    end
+  end
+  @doc """
+      This is just the same as query_gql_by but allows you to also put in your own custom pipeline
+  """
+  defmacro query_gql_by_pipeline(query_name, pipeline_phases, options \\ []) do
+    quote do
+      attribute =
+        unquote(__CALLER__.module).__info__(:attributes)[unquote(query_name)]
+        |> case do
+             nil -> nil
+             list -> List.last(list)
+           end
+
+      if is_nil(attribute) do
+        raise WormwoodSetupError, reason: :missing_declaration
+      end
+
+      options_list =
+        unquote(options)
+        |> Keyword.put(:schema, @_wormwood_gql_schema)
+        |> Absinthe.Pipeline.options()
+
+      pipeline = Enum.map(unquote(pipeline_phases), fn phase -> {phase, options_list} end)
+
+      case Absinthe.Pipeline.run(attribute, pipeline) do
+        {:ok, %{result: result}, _} -> {:ok, result}
+        reply -> reply
+      end
+
     end
   end
 
@@ -210,5 +240,11 @@ defmodule Wormwood.GQLCase do
 
       Absinthe.Pipeline.run(@_wormwood_gql_query, pipeline)
     end
+  end
+  @doc """
+    This function gets the default pipeline for your Schema
+  """
+  def default_pipeline() do
+    Absinthe.Pipeline.for_document(@_wormwood_gql_schema)
   end
 end
