@@ -167,7 +167,14 @@ defmodule Wormwood.GQLCase do
         |> Keyword.put(:schema, @_wormwood_gql_schema)
         |> Absinthe.Pipeline.options()
 
-      pipeline = Enum.map(unquote(pipeline_phases), fn phase -> {phase, options_list} end)
+      pipeline = Enum.map(unquote(pipeline_phases), fn phase ->
+
+        case is_tuple(phase) do
+          true -> phase
+          _ -> {phase, options_list}
+        end
+      end)
+
 
       case Absinthe.Pipeline.run(attribute, pipeline) do
         {:ok, %{result: result}, _} -> {:ok, result}
@@ -236,7 +243,13 @@ defmodule Wormwood.GQLCase do
         |> Keyword.put(:schema, @_wormwood_gql_schema)
         |> Absinthe.Pipeline.options()
 
-      pipeline = Enum.map(unquote(pipeline_phases), fn phase -> {phase, options_list} end)
+      pipeline = Enum.map(unquote(pipeline_phases), fn phase ->
+
+        case is_tuple(phase) do
+          true -> phase
+          _ -> {phase, options_list}
+        end
+      end)
 
       Absinthe.Pipeline.run(@_wormwood_gql_query, pipeline)
     end
