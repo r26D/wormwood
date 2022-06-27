@@ -244,7 +244,9 @@ defmodule Wormwood.GQLCase do
   @doc """
     This function gets the default pipeline for your Schema
   """
-  def default_pipeline() do
-    Absinthe.Pipeline.for_document(@_wormwood_gql_schema)
+  defmacro default_pipeline() do
+    quote do
+      Absinthe.Pipeline.for_document(@_wormwood_gql_schema)
+    end
   end
 end
