@@ -131,9 +131,9 @@ defmodule Wormwood.GQLCase do
       attribute =
         unquote(__CALLER__.module).__info__(:attributes)[unquote(query_name)]
         |> case do
-             nil -> nil
-             list -> List.last(list)
-           end
+          nil -> nil
+          list -> List.last(list)
+        end
 
       if is_nil(attribute) do
         raise WormwoodSetupError, reason: :missing_declaration
@@ -146,17 +146,20 @@ defmodule Wormwood.GQLCase do
       )
     end
   end
+
   @doc """
-      This is just the same as query_gql_by but allows you to also put in your own custom pipeline
+      This is just the same as query_gql_by but allows you to also put in your own custom pipeline. Any options passed in
+  are also given to the pipeline phases. They override options of the same name on any existing option lists.
+
   """
   defmacro query_gql_by_pipeline(query_name, pipeline_phases, options \\ []) do
     quote do
       attribute =
         unquote(__CALLER__.module).__info__(:attributes)[unquote(query_name)]
         |> case do
-             nil -> nil
-             list -> List.last(list)
-           end
+          nil -> nil
+          list -> List.last(list)
+        end
 
       if is_nil(attribute) do
         raise WormwoodSetupError, reason: :missing_declaration
@@ -167,20 +170,33 @@ defmodule Wormwood.GQLCase do
         |> Keyword.put(:schema, @_wormwood_gql_schema)
         |> Absinthe.Pipeline.options()
 
-      pipeline = Enum.map(unquote(pipeline_phases), fn phase ->
+      pipeline =
+        Enum.map(unquote(pipeline_phases), fn phase ->
+          case is_tuple(phase) do
+            true ->
+              {real_phase, existing_options_list} = phase
 
-        case is_tuple(phase) do
-          true -> phase
-          _ -> {phase, options_list}
-        end
-      end)
+              final_options_list =
+                Enum.reduce(Keyword.keys(options_list), existing_options_list, fn k, new_list ->
+                  Keyword.delete(new_list, k)
+                end)
+                |> then(fn clean_list ->
+                  Enum.reduce(options_list, clean_list, fn {k, v}, new_list ->
+                    Keyword.put(new_list, k, v)
+                  end)
+                end)
 
+              {real_phase, final_options_list}
+
+            _ ->
+              {phase, options_list}
+          end
+        end)
 
       case Absinthe.Pipeline.run(attribute, pipeline) do
         {:ok, %{result: result}, _} -> {:ok, result}
         reply -> reply
       end
-
     end
   end
 
@@ -243,26 +259,28 @@ defmodule Wormwood.GQLCase do
         |> Keyword.put(:schema, @_wormwood_gql_schema)
         |> Absinthe.Pipeline.options()
 
-      pipeline = Enum.map(unquote(pipeline_phases), fn phase ->
-
-        case is_tuple(phase) do
-          true -> phase
-          _ -> {phase, options_list}
-        end
-      end)
+      pipeline =
+        Enum.map(unquote(pipeline_phases), fn phase ->
+          case is_tuple(phase) do
+            true -> phase
+            _ -> {phase, options_list}
+          end
+        end)
 
       Absinthe.Pipeline.run(@_wormwood_gql_query, pipeline)
     end
   end
+
   @doc """
     This function gets the default pipeline for your Schema
   """
-  defmacro default_document_pipeline(options\\[]) do
+  defmacro default_document_pipeline(options \\ []) do
     quote do
       Absinthe.Pipeline.for_document(@_wormwood_gql_schema, unquote(options))
     end
   end
-  defmacro default_schema_pipeline(options\\[]) do
+
+  defmacro default_schema_pipeline(options \\ []) do
     quote do
       Absinthe.Pipeline.for_schema(@_wormwood_gql_schema, unquote(options))
     end
