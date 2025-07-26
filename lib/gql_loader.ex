@@ -109,7 +109,47 @@ defmodule Wormwood.GQLLoader do
           |> List.first()
           |> Map.get(:line)
 
-        raise WormwoodParseError, path: src_path, err: error.message, line: error_location
+        context_lines = get_error_context(document, error_location)
+
+        raise WormwoodParseError,
+          path: src_path,
+          err: error.message,
+          line: error_location,
+          context: context_lines
     end
   end
+
+  defp get_error_context(document, error_line) when is_integer(error_line) and error_line > 0 do
+    lines = String.split(document, "\n")
+    total_lines = length(lines)
+
+    cond do
+      error_line > total_lines ->
+        "Line #{error_line} is beyond the document length (#{total_lines} lines)"
+
+      error_line == 1 ->
+        [
+          "Line #{error_line}: #{Enum.at(lines, 0)}",
+          "Line #{error_line + 1}: #{Enum.at(lines, 1)}"
+        ]
+        |> Enum.join("\n")
+
+      error_line == total_lines ->
+        [
+          "Line #{error_line - 1}: #{Enum.at(lines, error_line - 2)}",
+          "Line #{error_line}: #{Enum.at(lines, error_line - 1)}"
+        ]
+        |> Enum.join("\n")
+
+      true ->
+        [
+          "Line #{error_line - 1}: #{Enum.at(lines, error_line - 2)}",
+          "Line #{error_line}: #{Enum.at(lines, error_line - 1)}",
+          "Line #{error_line + 1}: #{Enum.at(lines, error_line)}"
+        ]
+        |> Enum.join("\n")
+    end
+  end
+
+  defp get_error_context(_document, _error_line), do: "Unable to determine error context"
 end
